@@ -1,11 +1,16 @@
-import Image from "next/image";
 import Link from "next/link";
 
 export default function BookCard({ book, showCategory = false }) {
   return (
     <article className="card-pro overflow-hidden group">
       <div className="relative h-64">
-        <Image src={book.image_url} alt={book.title} fill className="object-cover transition-transform duration-300 group-hover:scale-[1.03]" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={book.image_url}
+          alt={book.title}
+          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+          loading="lazy"
+        />
         <div className="absolute inset-0 bg-gradient-to-t from-black/45 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
         <div className="absolute bottom-3 left-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
           <Link href={`/books/${book.id}`} className="btn-pro h-9 text-sm bg-white/95 text-[#0f172a] px-3 rounded-lg">
