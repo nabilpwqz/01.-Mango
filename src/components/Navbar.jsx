@@ -18,21 +18,21 @@ export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   const handleLogout = async () => {
     await authClient.signOut();
     toast.success("Logged out successfully");
     setMobileOpen(false);
-    setUserMenuOpen(false);
     router.push("/");
     router.refresh();
   };
 
+  const displayName = session?.user?.name || session?.user?.email || "Account";
+
   return (
     <header className="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-[#e5e7eb]">
       <div className="container-pro h-16 flex items-center gap-3 md:gap-6">
-        <Link href="/" className="text-[28px] font-bold tracking-tight text-[#0f172a]">
+        <Link href="/" className="text-[28px] font-bold tracking-tight text-[#0f172a] shrink-0">
           Mango
         </Link>
         <nav className="hidden md:flex items-center gap-8">
@@ -50,58 +50,58 @@ export default function Navbar() {
             </Link>
           ))}
         </nav>
-        <div className="hidden lg:flex ml-auto mr-2">
-          <button
-            className="h-10 w-[280px] rounded-xl border border-[#e5e7eb] bg-white px-3 text-left text-sm text-[#6b7280] hover:border-[#cbd5e1] transition"
-            onClick={() => router.push("/books")}
-          >
-            Search books...
-          </button>
-        </div>
-        <button
-          className="md:hidden ml-auto h-9 px-3 rounded-lg border border-[#e5e7eb] text-sm"
-          onClick={() => setMobileOpen((prev) => !prev)}
-          type="button"
-        >
-          Menu
-        </button>
-        {isPending ? (
-          <div className="h-9 w-9 rounded-full bg-gray-200 animate-pulse hidden md:block" />
-        ) : session?.user ? (
-          <div className="hidden md:block relative">
-            <button className="cursor-pointer" onClick={() => setUserMenuOpen((prev) => !prev)} type="button">
-              <div className="h-9 w-9 rounded-full overflow-hidden border border-[#e5e7eb] bg-[#f3f4f6] relative">
-                {session.user.image ? (
-                  <Image src={session.user.image} alt={session.user.name || "User"} fill className="object-cover" />
-                ) : null}
-              </div>
+        <div className="flex items-center gap-3 ml-auto">
+          <div className="hidden lg:block">
+            <button
+              type="button"
+              className="h-10 w-[280px] rounded-xl border border-[#e5e7eb] bg-white px-3 text-left text-sm text-[#6b7280] hover:border-[#cbd5e1] transition"
+              onClick={() => router.push("/books")}
+            >
+              Search books...
             </button>
-            {userMenuOpen && (
-              <ul className="absolute right-0 mt-3 w-52 p-2 bg-white rounded-xl border border-[#e5e7eb] shadow-lg space-y-1">
-                <li className="px-3 py-2 text-sm font-semibold">{session.user.name || "User"}</li>
-                <li>
-                  <Link className="block rounded-lg px-3 py-2 text-sm hover:bg-[#f9fafb]" href="/profile" onClick={() => setUserMenuOpen(false)}>
-                    Profile
-                  </Link>
-                </li>
-                <li>
-                  <Link className="block rounded-lg px-3 py-2 text-sm hover:bg-[#f9fafb]" href="/books" onClick={() => setUserMenuOpen(false)}>
-                    Borrowed Books
-                  </Link>
-                </li>
-                <li>
-                  <button className="w-full text-left rounded-lg px-3 py-2 text-sm hover:bg-[#fef2f2]" onClick={handleLogout}>
-                    Logout
-                  </button>
-                </li>
-              </ul>
-            )}
           </div>
-        ) : (
-          <Link href="/login" className="btn-pro btn-pro-primary hidden md:inline-flex">
-            Login
-          </Link>
-        )}
+          <button
+            type="button"
+            className="md:hidden h-9 px-3 rounded-lg border border-[#e5e7eb] text-sm"
+            onClick={() => setMobileOpen((prev) => !prev)}
+          >
+            Menu
+          </button>
+          {isPending ? (
+            <div className="h-9 min-w-[140px] rounded-lg bg-gray-200 animate-pulse hidden md:block" />
+          ) : session?.user ? (
+            <div className="hidden md:flex items-center gap-4 shrink-0">
+            <Link
+              href="/profile"
+              className="flex items-center gap-2 rounded-xl px-2 py-1 max-w-[240px] hover:bg-[#f8fafc] transition"
+              title={displayName}
+            >
+              <div className="h-9 w-9 rounded-full overflow-hidden border border-[#e5e7eb] bg-[#f3f4f6] relative shrink-0">
+                {session.user.image ? (
+                  <Image src={session.user.image} alt={displayName} fill className="object-cover" sizes="36px" />
+                ) : (
+                  <span className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-[#64748b]">
+                    {(displayName[0] || "?").toUpperCase()}
+                  </span>
+                )}
+              </div>
+              <span className="text-sm font-semibold text-[#0f172a] truncate">{displayName}</span>
+            </Link>
+            <button type="button" className="btn-pro border border-[#e5e7eb] bg-white text-[#0f172a] hover:bg-[#f8fafc] text-sm" onClick={handleLogout}>
+              Logout
+            </button>
+            </div>
+          ) : (
+            <div className="hidden md:flex items-center gap-3 shrink-0">
+              <Link href="/login" className="btn-pro btn-pro-primary">
+                Login
+              </Link>
+              <Link href="/register" className="text-sm font-medium text-[#059669] hover:underline">
+                Register
+              </Link>
+            </div>
+          )}
+        </div>
       </div>
       {mobileOpen && (
         <div className="md:hidden border-t border-[#e5e7eb] bg-white">
@@ -117,14 +117,25 @@ export default function Navbar() {
               </Link>
             ))}
             {!isPending && !session?.user && (
-              <Link href="/login" className="block rounded-lg px-3 py-2 text-sm hover:bg-[#f9fafb]" onClick={() => setMobileOpen(false)}>
-                Login
-              </Link>
+              <>
+                <Link href="/login" className="block rounded-lg px-3 py-2 text-sm hover:bg-[#f9fafb]" onClick={() => setMobileOpen(false)}>
+                  Login
+                </Link>
+                <Link href="/register" className="block rounded-lg px-3 py-2 text-sm hover:bg-[#f9fafb]" onClick={() => setMobileOpen(false)}>
+                  Register
+                </Link>
+              </>
             )}
             {!isPending && session?.user && (
-              <button className="w-full text-left rounded-lg px-3 py-2 text-sm hover:bg-[#fef2f2]" onClick={handleLogout}>
-                Logout
-              </button>
+              <>
+                <p className="px-3 py-2 text-sm font-semibold text-[#0f172a] truncate">{displayName}</p>
+                <Link href="/profile" className="block rounded-lg px-3 py-2 text-sm hover:bg-[#f9fafb]" onClick={() => setMobileOpen(false)}>
+                  Profile
+                </Link>
+                <button type="button" className="w-full text-left rounded-lg px-3 py-2 text-sm hover:bg-[#fef2f2]" onClick={handleLogout}>
+                  Logout
+                </button>
+              </>
             )}
           </div>
         </div>

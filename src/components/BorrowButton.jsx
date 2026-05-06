@@ -4,11 +4,18 @@ import toast from "react-hot-toast";
 
 export default function BorrowButton({ disabled }) {
   const handleBorrow = () => {
-    toast.success("Borrow request submitted successfully!");
+    if (typeof window === "undefined") return;
+    const ok = window.confirm("Confirm borrowing this book? You can pick it up once the librarian approves.");
+    if (!ok) {
+      toast("Borrow cancelled", { icon: "ℹ️" });
+      return;
+    }
+    toast.success("Borrow confirmed! Request submitted.");
   };
 
   return (
     <button
+      type="button"
       className="btn-pro btn-pro-primary w-full"
       onClick={handleBorrow}
       disabled={disabled}

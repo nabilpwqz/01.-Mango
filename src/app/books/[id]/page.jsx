@@ -6,12 +6,14 @@ import { books } from "@/data/books";
 import { getServerSession } from "@/lib/session";
 
 export default async function BookDetailsPage({ params }) {
+  const resolvedParams = await Promise.resolve(params);
+
   const session = await getServerSession();
   if (!session?.user) {
     redirect("/login");
   }
 
-  const book = books.find((item) => item.id === params.id);
+  const book = books.find((item) => item.id === resolvedParams.id);
   if (!book) {
     notFound();
   }
@@ -24,13 +26,13 @@ export default async function BookDetailsPage({ params }) {
           className="absolute inset-0 bg-cover bg-center opacity-20 blur-2xl scale-110"
           style={{ backgroundImage: `url(${book.image_url})` }}
         />
-        <div className="relative grid lg:grid-cols-12 gap-8 p-6 md:p-10">
-          <div className="lg:col-span-5">
-            <div className="relative h-[480px] rounded-2xl overflow-hidden border border-white/70 shadow-[0_20px_36px_rgba(15,23,42,0.15)]">
+        <div className="relative grid lg:grid-cols-12 gap-8 p-6 md:p-10 items-start">
+          <div className="lg:col-span-5 order-1">
+            <div className="relative h-[min(72vw,420px)] lg:h-[520px] rounded-2xl overflow-hidden border border-white/70 shadow-[0_20px_36px_rgba(15,23,42,0.15)]">
               <Image src={book.image_url} alt={book.title} fill className="object-cover" />
             </div>
           </div>
-          <div className="lg:col-span-7">
+          <div className="lg:col-span-7 order-2">
             <p className="text-xs uppercase tracking-[0.2em] text-[#f59e0b]">{book.category}</p>
             <h1 className="text-4xl font-semibold mt-3">{book.title}</h1>
             <p className="mt-3 text-xl text-[#64748b]">{book.author}</p>
