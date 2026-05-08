@@ -2,10 +2,6 @@
 
 # 📚 Mango — Digital Book Borrowing Platform
 
-🔗 **Live Application:** [https://ornate-brigadeiros-38b3d8.netlify.app/books](https://ornate-brigadeiros-38b3d8.netlify.app/books)
-
----
-
 ## 🧭 Product Overview
 
 **Mango** is a scalable web application that modernizes the traditional library system into a seamless digital experience. It enables users to explore book collections, access detailed metadata, and interact with a structured borrowing interface.
