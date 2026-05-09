@@ -1,7 +1,7 @@
 node_modules
-.data
-*.sqlite
 .next
-.env.local
-.env
+out
+dist
+.env*.local
 npm-debug.log*
+.DS_Store

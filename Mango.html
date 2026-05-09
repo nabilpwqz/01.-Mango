@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🥭 Mango – Online Book Borrowing Platform</title>
+    <!-- Mango favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🥭</text></svg>">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        mango: {
+                            50: '#fff8f0',100: '#ffedd5',200: '#fed7aa',300: '#fdba74',400: '#fb923c',500: '#f97316',600: '#ea580c',700: '#c2410c',800: '#9a3412',900: '#7c2d12',
+                        },
+                        leaf: {
+                            50: '#f0fdf4',100: '#dcfce7',200: '#bbf7d0',400: '#4ade80',500: '#22c55e',600: '#16a34a',700: '#15803d',
+                        },
+                        warm: {
+                            50: '#fafaf9',100: '#f5f5f4',200: '#e7e5e4',
+                        }
+                    },
+                    fontFamily: {
+                        'display': ['"Playfair Display"', 'Georgia', 'serif'],
+                        'body': ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    backgroundImage: {
+                        'hero-pattern': "url('data:image/svg+xml,%3Csvg width=\"60\" height=\"60\" viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cg fill=\"none\" fill-rule=\"evenodd\"%3E%3Cg fill=\"%23ffffff\" fill-opacity=\"0.05\"%3E%3Cpath d=\"M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')",
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- DaisyUI CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" type="text/css" />
+
+    <!-- Animate.css CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
+    <!-- Swiper.js CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --mango-primary: #f97316;
+            --leaf-accent: #22c55e;
+        }
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            scroll-behavior: smooth;
+            background-color: #fafaf9;
+            color: #1c1917;
+        }
+        .font-display {
+            font-family: 'Playfair Display', Georgia, serif;
+        }
+
+        /* Marquee */
+        .marquee-wrapper {
+            overflow: hidden;
+            white-space: nowrap;
+            background: linear-gradient(105deg, #f97316 0%, #ea580c 40%, #c2410c 100%);
+            padding: 12px 0;
+            position: relative;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .marquee-content {
+            display: inline-block;
+            animation: marqueeScroll 28s linear infinite;
+            color: #fff8f0;
+            font-weight: 500;
+            letter-spacing: 0.8px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        @keyframes marqueeScroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        .marquee-wrapper:hover .marquee-content {
+            animation-play-state: paused;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f5f5f4; }
+        ::-webkit-scrollbar-thumb { background: #fb923c; border-radius: 20px; }
+        ::-webkit-scrollbar-thumb:hover { background: #ea580c; }
+
+        /* Page sections */
+        .page-section { display: none; }
+        .page-section.active { display: block; }
+
+        /* Book card */
+        .book-card {
+            transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            border: 1px solid #e7e5e4;
+            border-radius: 1.5rem;
+            overflow: hidden;
+            background: white;
+            position: relative;
+        }
+        .book-card:hover {
+            transform: translateY(-12px);
+            box-shadow: 0 32px 56px -16px rgba(249, 115, 22, 0.2);
+            border-color: #fdba74;
+        }
+        .book-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: linear-gradient(90deg, #f97316, #fb923c);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .book-card:hover::after {
+            opacity: 1;
+        }
+
+        .badge-new {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: #22c55e;
+            color: white;
+            padding: 2px 10px;
+            border-radius: 9999px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            z-index: 2;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .badge-popular {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: #f97316;
+            color: white;
+            padding: 2px 10px;
+            border-radius: 9999px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            z-index: 2;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        /* Toast */
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+        }
+        .toast-item {
+            pointer-events: auto;
+            animation: slideInRight 0.4s ease-out, fadeOut 0.4s ease-in 2.6s forwards;
+            border-radius: 16px;
+            box-shadow: 0 12px 28px rgba(0,0,0,0.12);
+        }
+        @keyframes slideInRight {
+            from { transform: translateX(120%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; transform: translateX(40px); }
+        }
+
+        .cat-filter-btn.active-filter {
+            background-color: #f97316 !important;
+            color: white !important;
+            border-color: #f97316 !important;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(249,115,22,0.25);
+        }
+
+        .swiper-button-next, .swiper-button-prev {
+            color: #f97316 !important;
+            background: white;
+            width: 44px !important;
+            height: 44px !important;
+            border-radius: 50%;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            border: 1px solid #fed7aa;
+            top: 50%;
+        }
+        .swiper-button-next:hover, .swiper-button-prev:hover {
+            background: #f97316;
+            color: white !important;
+            border-color: #f97316;
+            transform: scale(1.08);
+        }
+        .swiper-button-next::after, .swiper-button-prev::after {
+            font-size: 18px !important;
+            font-weight: 700;
+        }
+
+        .btn-hover-effect {
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-hover-effect::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+        .btn-hover-effect:hover::before {
+            left: 100%;
+        }
+
+        .social-icon {
+            transition: transform 0.2s ease, color 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 9999px;
+            color: #9ca3af;
+            background: rgba(255,255,255,0.05);
+        }
+        .social-icon:hover {
+            transform: translateY(-3px) scale(1.1);
+            color: #f97316 !important;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .profile-avatar {
+            box-shadow: 0 12px 25px -10px rgba(249,115,22,0.3);
+            border: 4px solid #fff;
+        }
+
+        footer::before {
+            content: '';
+            display: block;
+            height: 4px;
+            background: linear-gradient(90deg, #f97316, #fdba74, #f97316);
+            margin-bottom: -4px;
+        }
+
+        .sort-select {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col bg-warm-50 text-gray-900">
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <!-- ==================== NAVBAR ==================== -->
+    <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-xl border-b border-warm-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16 lg:h-18">
+                <a href="#/" class="flex items-center gap-2 font-display text-2xl lg:text-3xl font-bold text-mango-700 hover:text-mango-600 transition-colors" id="nav-logo">
+                    <span class="text-3xl lg:text-4xl">🥭</span>
+                    <span>Mango</span>
+                </a>
+                <nav class="hidden md:flex items-center gap-6 text-sm font-medium">
+                    <a href="#/" class="nav-link text-gray-700 hover:text-mango-600 transition-colors py-2 border-b-2 border-transparent hover:border-mango-500">Home</a>
+                    <a href="#/all-books" class="nav-link text-gray-700 hover:text-mango-600 transition-colors py-2 border-b-2 border-transparent hover:border-mango-500">All Books</a>
+                    <a href="#/profile" class="nav-link text-gray-700 hover:text-mango-600 transition-colors py-2 border-b-2 border-transparent hover:border-mango-500" id="nav-profile-link">My Profile</a>
+                </nav>
+                <div class="flex items-center gap-3" id="nav-auth-area"></div>
+                <button id="mobile-menu-btn" class="md:hidden btn btn-ghost btn-circle text-2xl text-gray-700">☰</button>
+            </div>
+            <div id="mobile-nav-dropdown" class="hidden md:hidden pb-4 flex flex-col gap-2 border-t border-warm-200 pt-3">
+                <a href="#/" class="mobile-nav-link btn btn-ghost justify-start text-gray-700">🏠 Home</a>
+                <a href="#/all-books" class="mobile-nav-link btn btn-ghost justify-start text-gray-700">📖 All Books</a>
+                <a href="#/profile" class="mobile-nav-link btn btn-ghost justify-start text-gray-700" id="mobile-nav-profile">👤 My Profile</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow">
+        <!-- HOME -->
+        <section id="page-home" class="page-section active">
+            <div class="relative bg-gradient-to-br from-mango-700 via-mango-600 to-mango-500 text-white overflow-hidden">
+                <div class="absolute inset-0 opacity-20 bg-hero-pattern"></div>
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-32 relative z-10">
+                    <div class="max-w-2xl animate__animated animate__fadeInUp">
+                        <h1 class="font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight mb-6 text-white drop-shadow-lg">
+                            Find Your<br>Next <span class="text-mango-200 bg-gradient-to-r from-mango-200 to-leaf-200 text-transparent bg-clip-text">Read</span>
+                        </h1>
+                        <p class="text-lg lg:text-xl text-mango-100 mb-8 max-w-lg">Explore thousands of books, borrow digitally, and dive into worlds of knowledge — all from the comfort of your screen.</p>
+                        <a href="#/all-books" class="btn btn-lg bg-white hover:bg-mango-50 text-mango-700 font-bold border-none px-8 rounded-full text-base shadow-2xl shadow-mango-900/30 transition-all hover:scale-105 btn-hover-effect">Browse Now ✨</a>
+                    </div>
+                </div>
+                <div class="absolute top-10 right-10 w-28 h-28 bg-mango-400/20 rounded-full blur-3xl"></div>
+                <div class="absolute bottom-10 right-40 w-40 h-40 bg-leaf-400/15 rounded-full blur-3xl"></div>
+            </div>
+
+            <div class="marquee-wrapper"><span class="marquee-content text-sm sm:text-base">🆕 New Arrivals: "The Midnight Library" | "Clean Code" | "Cosmos" | "The Gene" &nbsp;|&nbsp; 🎉 Special Discount on Memberships — Get 30% off annual plans &nbsp;|&nbsp; 📚 This Week's Highlight: "AI Revolution" by Stuart Russell &nbsp;|&nbsp; ⭐ Reader's Choice: "The Pragmatic Programmer" &nbsp;|&nbsp; 🆕 New Arrivals: "The Midnight Library" | "Clean Code" | "Cosmos" | "The Gene" &nbsp;|&nbsp; 🎉 Special Discount on Memberships — Get 30% off annual plans &nbsp;|&nbsp; 📚 This Week's Highlight: "AI Revolution" by Stuart Russell &nbsp;|&nbsp; ⭐ Reader's Choice: "The Pragmatic Programmer"</span></div>
+
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+                <div class="text-center mb-10"><h2 class="font-display text-3xl lg:text-4xl font-bold text-mango-700 mb-3">Featured Books</h2><p class="text-gray-500 max-w-md mx-auto">Handpicked selections just for you.</p></div>
+                <div class="swiper featured-swiper rounded-2xl overflow-hidden">
+                    <div class="swiper-wrapper" id="featured-books-container"></div>
+                    <div class="swiper-button-next"></div><div class="swiper-button-prev"></div><div class="swiper-pagination !bottom-2"></div>
+                </div>
+            </div>
+
+            <div class="bg-white py-16 border-y border-warm-200">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center mb-12"><h2 class="font-display text-3xl lg:text-4xl font-bold text-mango-700 mb-3">How It Works</h2></div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto px-4">
+                    <div class="text-center p-8 rounded-2xl bg-warm-50 hover:bg-mango-50 transition-all duration-300 border border-warm-100"><div class="w-16 h-16 bg-mango-100 rounded-full flex items-center justify-center mx-auto mb-5 text-3xl">🔍</div><h3 class="font-bold text-xl text-mango-700 mb-2">1. Browse & Discover</h3><p class="text-gray-600">Find the perfect book by category.</p></div>
+                    <div class="text-center p-8 rounded-2xl bg-warm-50 hover:bg-mango-50 transition-all duration-300 border border-warm-100"><div class="w-16 h-16 bg-mango-100 rounded-full flex items-center justify-center mx-auto mb-5 text-3xl">📋</div><h3 class="font-bold text-xl text-mango-700 mb-2">2. Borrow Instantly</h3><p class="text-gray-600">Click borrow and start reading.</p></div>
+                    <div class="text-center p-8 rounded-2xl bg-warm-50 hover:bg-mango-50 transition-all duration-300 border border-warm-100"><div class="w-16 h-16 bg-mango-100 rounded-full flex items-center justify-center mx-auto mb-5 text-3xl">📖</div><h3 class="font-bold text-xl text-mango-700 mb-2">3. Read & Return</h3><p class="text-gray-600">Return when done so others can enjoy.</p></div>
+                </div>
+            </div>
+
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+                <div class="bg-gradient-to-r from-mango-700 to-mango-600 rounded-3xl p-8 lg:p-12 text-white text-center shadow-2xl">
+                    <h2 class="font-display text-3xl lg:text-4xl font-bold mb-4">📚 2026 Reading Challenge</h2>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-6 max-w-2xl mx-auto mt-8">
+                        <div class="bg-white/10 rounded-2xl p-5"><div class="text-4xl font-extrabold text-mango-200">12K+</div><div class="text-sm text-mango-100 mt-1">Active Readers</div></div>
+                        <div class="bg-white/10 rounded-2xl p-5"><div class="text-4xl font-extrabold text-mango-200">45K</div><div class="text-sm text-mango-100 mt-1">Books Borrowed</div></div>
+                        <div class="bg-white/10 rounded-2xl p-5"><div class="text-4xl font-extrabold text-mango-200">8.7</div><div class="text-sm text-mango-100 mt-1">Avg. Rating</div></div>
+                        <div class="bg-white/10 rounded-2xl p-5"><div class="text-4xl font-extrabold text-mango-200">24/7</div><div class="text-sm text-mango-100 mt-1">Availability</div></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ALL BOOKS -->
+        <section id="page-all-books" class="page-section">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+                <h1 class="font-display text-3xl lg:text-4xl font-bold text-mango-700 mb-6">All Books</h1>
+                <div class="flex flex-col sm:flex-row gap-4 mb-6">
+                    <input type="text" id="search-books-input" placeholder="🔍 Search books by title..." class="input input-bordered w-full rounded-full text-base py-6 px-6 border-warm-200 focus:border-mango-500">
+                    <select id="sort-books-select" class="select select-bordered rounded-full py-3 px-5 border-warm-200 sort-select">
+                        <option value="default">Sort: Default</option><option value="newest">Sort: Newest</option><option value="popular">Sort: Most Popular</option>
+                    </select>
+                </div>
+                <div class="flex flex-col lg:flex-row gap-8">
+                    <aside class="lg:w-56 flex-shrink-0">
+                        <div class="bg-white rounded-2xl p-5 shadow-sm border border-warm-200 sticky top-24">
+                            <h3 class="font-bold text-lg text-mango-700 mb-4">Categories</h3>
+                            <div class="flex flex-wrap lg:flex-col gap-2" id="category-filter-buttons">
+                                <button class="cat-filter-btn btn btn-sm btn-outline rounded-full active-filter" data-cat="all">📚 All</button>
+                                <button class="cat-filter-btn btn btn-sm btn-outline rounded-full" data-cat="Story">📖 Story</button>
+                                <button class="cat-filter-btn btn btn-sm btn-outline rounded-full" data-cat="Tech">💻 Tech</button>
+                                <button class="cat-filter-btn btn btn-sm btn-outline rounded-full" data-cat="Science">🔬 Science</button>
+                            </div>
+                        </div>
+                    </aside>
+                    <div class="flex-1">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6" id="all-books-grid"></div>
+                        <div id="no-books-found" class="hidden text-center py-16 text-gray-500">No books found.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- BOOK DETAILS -->
+        <section id="page-book-details" class="page-section"><div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10" id="book-details-content"></div></section>
+
+        <!-- LOGIN -->
+        <section id="page-login" class="page-section">
+            <div class="max-w-md mx-auto px-4 py-16">
+                <div class="bg-white rounded-3xl shadow-xl p-8 border border-warm-200">
+                    <h1 class="font-display text-3xl font-bold text-mango-700 text-center mb-6">Welcome Back</h1>
+                    <form id="login-form" class="space-y-5">
+                        <div><label class="block text-sm font-semibold text-gray-700 mb-1">Email</label><input type="email" id="login-email" required placeholder="demo@mango.com" class="input input-bordered w-full rounded-xl"></div>
+                        <div><label class="block text-sm font-semibold text-gray-700 mb-1">Password</label><input type="password" id="login-password" required placeholder="password123" class="input input-bordered w-full rounded-xl"></div>
+                        <div id="login-error" class="text-red-500 text-sm hidden"></div>
+                        <button type="submit" class="btn bg-mango-600 hover:bg-mango-700 text-white w-full rounded-xl">Login</button>
+                    </form>
+                    <div class="divider my-4">or</div>
+                    <button id="google-login-btn" class="btn btn-outline w-full rounded-xl flex items-center justify-center gap-2"><svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-1 7.28-2.69l-3.57-2.77c-.99.66-2.26 1.05-3.71 1.05-2.86 0-5.28-1.93-6.15-4.53H2.18v2.84C4 20.73 7.73 23 12 23z"/><path fill="#FBBC05" d="M5.85 14.06A6.53 6.53 0 015.5 12c0-.71.12-1.4.35-2.06V7.1H2.18A10.86 10.86 0 001 12c0 1.77.42 3.44 1.18 4.94l3.67-2.88z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.2 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.73 1 4 3.27 2.18 6.56l3.67 2.88C6.72 7.31 9.14 5.38 12 5.38z"/></svg> Continue with Google</button>
+                    <p class="text-center text-sm mt-6">Don't have an account? <a href="#/register" class="text-mango-600 font-semibold">Register here</a></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- REGISTER -->
+        <section id="page-register" class="page-section">
+            <div class="max-w-md mx-auto px-4 py-16">
+                <div class="bg-white rounded-3xl shadow-xl p-8 border border-warm-200">
+                    <h1 class="font-display text-3xl font-bold text-mango-700 text-center mb-6">Create Account</h1>
+                    <form id="register-form" class="space-y-5">
+                        <div><label class="block text-sm font-semibold text-gray-700 mb-1">Name</label><input type="text" id="register-name" required placeholder="John Doe" class="input input-bordered w-full rounded-xl"></div>
+                        <div><label class="block text-sm font-semibold text-gray-700 mb-1">Email</label><input type="email" id="register-email" required placeholder="you@example.com" class="input input-bordered w-full rounded-xl"></div>
+                        <div><label class="block text-sm font-semibold text-gray-700 mb-1">Photo URL (link)</label><input type="url" id="register-photo" placeholder="https://example.com/photo.jpg" class="input input-bordered w-full rounded-xl"></div>
+                        <div><label class="block text-sm font-semibold text-gray-700 mb-1">Password</label><input type="password" id="register-password" required placeholder="••••••••" minlength="6" class="input input-bordered w-full rounded-xl"></div>
+                        <div id="register-error" class="text-red-500 text-sm hidden"></div>
+                        <button type="submit" class="btn bg-mango-600 hover:bg-mango-700 text-white w-full rounded-xl">Register</button>
+                    </form>
+                    <div class="divider my-4">or</div>
+                    <button id="google-register-btn" class="btn btn-outline w-full rounded-xl flex items-center justify-center gap-2"><svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-1 7.28-2.69l-3.57-2.77c-.99.66-2.26 1.05-3.71 1.05-2.86 0-5.28-1.93-6.15-4.53H2.18v2.84C4 20.73 7.73 23 12 23z"/><path fill="#FBBC05" d="M5.85 14.06A6.53 6.53 0 015.5 12c0-.71.12-1.4.35-2.06V7.1H2.18A10.86 10.86 0 001 12c0 1.77.42 3.44 1.18 4.94l3.67-2.88z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.2 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.73 1 4 3.27 2.18 6.56l3.67 2.88C6.72 7.31 9.14 5.38 12 5.38z"/></svg> Continue with Google</button>
+                    <p class="text-center text-sm mt-6">Already have an account? <a href="#/login" class="text-mango-600 font-semibold">Login here</a></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- PROFILE -->
+        <section id="page-profile" class="page-section"><div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-10" id="profile-content"></div></section>
+        <section id="page-update-profile" class="page-section">
+            <div class="max-w-md mx-auto px-4 py-16">
+                <div class="bg-white rounded-3xl shadow-xl p-8">
+                    <h1 class="font-display text-3xl font-bold text-mango-700 text-center mb-6">Update Profile</h1>
+                    <form id="update-profile-form" class="space-y-5">
+                        <div><label class="block text-sm font-semibold text-gray-700 mb-1">Profile Image URL</label><input type="url" id="update-photo" placeholder="https://example.com/photo.jpg" class="input input-bordered w-full rounded-xl"></div>
+                        <div><label class="block text-sm font-semibold text-gray-700 mb-1">Name</label><input type="text" id="update-name" required placeholder="Your name" class="input input-bordered w-full rounded-xl"></div>
+                        <button type="submit" class="btn bg-mango-600 hover:bg-mango-700 text-white w-full rounded-xl">Update Information</button>
+                    </form>
+                    <a href="#/profile" class="btn btn-ghost w-full mt-4 rounded-xl">← Back to Profile</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ==================== FOOTER ==================== -->
+    <footer class="bg-gray-900 text-white mt-auto relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center gap-2 font-display text-2xl font-bold mb-3"><span>🥭</span><span>Mango</span></div>
+                    <p class="text-gray-400 text-sm max-w-xs">Your digital library companion.</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-lg mb-3">Quick Links</h4>
+                    <ul class="space-y-2 text-gray-400 text-sm">
+                        <li><a href="#/" class="hover:text-mango-400 transition-colors">Home</a></li>
+                        <li><a href="#/all-books" class="hover:text-mango-400 transition-colors">All Books</a></li>
+                        <li><a href="#/profile" class="hover:text-mango-400 transition-colors">My Profile</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-lg mb-3">Contact Us</h4>
+                    <ul class="space-y-2 text-gray-400 text-sm">
+                        <li class="flex items-center gap-2"><span>📧</span> support@mango-books.com</li>
+                        <li class="flex items-center gap-2"><span>📞</span> +1 (555) 123-4567</li>
+                        <li class="flex items-center gap-2"><span>📍</span> 142 Mango Lane, Booktown</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-lg mb-3">Follow Us</h4>
+                    <div class="flex gap-3">
+                        <!-- Facebook -->
+                        <a href="#" class="social-icon" title="Facebook" aria-label="Facebook">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                        </a>
+                        <!-- Twitter X -->
+                        <a href="#" class="social-icon" title="Twitter" aria-label="Twitter">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                        </a>
+                        <!-- Instagram -->
+                        <a href="#" class="social-icon" title="Instagram" aria-label="Instagram">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                        </a>
+                        <!-- LinkedIn -->
+                        <a href="#" class="social-icon" title="LinkedIn" aria-label="LinkedIn">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                        </a>
+                        <!-- YouTube -->
+                        <a href="#" class="social-icon" title="YouTube" aria-label="YouTube">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-6 text-center text-gray-500 text-sm">
+                &copy; 2026 Mango. All rights reserved. Built with ❤️ for readers everywhere.
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script>
+        const defaultBooks = [
+            { id:1,title:"The Midnight Library",author:"Matt Haig",description:"Between life and death there is a library...",category:"Story",available_quantity:5,image_url:"https://picsum.photos/seed/book1/400/560" },
+            { id:2,title:"The Lost Garden",author:"Sarah Addison",description:"A enchanting tale...",category:"Story",available_quantity:3,image_url:"https://picsum.photos/seed/book2/400/560" },
+            { id:3,title:"Ocean's Whisper",author:"Maria Chen",description:"A coastal village...",category:"Story",available_quantity:7,image_url:"https://picsum.photos/seed/book3/400/560" },
+            { id:4,title:"The Storyteller's Secret",author:"James Wright",description:"An old storyteller...",category:"Story",available_quantity:4,image_url:"https://picsum.photos/seed/book4/400/560" },
+            { id:5,title:"Clean Code",author:"Robert C. Martin",description:"A handbook of agile...",category:"Tech",available_quantity:8,image_url:"https://picsum.photos/seed/book5/400/560" },
+            { id:6,title:"The Pragmatic Programmer",author:"David Thomas & Andrew Hunt",description:"The classic guide...",category:"Tech",available_quantity:6,image_url:"https://picsum.photos/seed/book6/400/560" },
+            { id:7,title:"AI Revolution",author:"Stuart Russell",description:"An insightful exploration...",category:"Tech",available_quantity:9,image_url:"https://picsum.photos/seed/book7/400/560" },
+            { id:8,title:"Cloud Architecture Patterns",author:"Bill Wilder",description:"A comprehensive guide...",category:"Tech",available_quantity:4,image_url:"https://picsum.photos/seed/book8/400/560" },
+            { id:9,title:"A Brief History of Time",author:"Stephen Hawking",description:"From the Big Bang...",category:"Science",available_quantity:10,image_url:"https://picsum.photos/seed/book9/400/560" },
+            { id:10,title:"The Gene",author:"Siddhartha Mukherjee",description:"A magnificent history...",category:"Science",available_quantity:5,image_url:"https://picsum.photos/seed/book10/400/560" },
+            { id:11,title:"Cosmos",author:"Carl Sagan",description:"A legendary journey...",category:"Science",available_quantity:7,image_url:"https://picsum.photos/seed/book11/400/560" },
+            { id:12,title:"The Hidden Life of Trees",author:"Peter Wohlleben",description:"Discover the astonishing...",category:"Science",available_quantity:6,image_url:"https://picsum.photos/seed/book12/400/560" }
+        ];
+
+        function getBooks(){ const s=localStorage.getItem('mango_books'); return s?JSON.parse(s):(localStorage.setItem('mango_books',JSON.stringify(defaultBooks)),[...defaultBooks]); }
+        function saveBooks(b){ localStorage.setItem('mango_books',JSON.stringify(b)); }
+        function getUsers(){ const s=localStorage.getItem('mango_users'); if(s)return JSON.parse(s); const u=[{id:1,name:'Demo User',email:'demo@mango.com',password:'password123',photo_url:'https://picsum.photos/seed/user1/200/200',provider:'email'}]; localStorage.setItem('mango_users',JSON.stringify(u)); return u; }
+        function saveUsers(u){ localStorage.setItem('mango_users',JSON.stringify(u)); }
+        function getCurrentUser(){ const s=localStorage.getItem('mango_current_user'); return s?JSON.parse(s):null; }
+        function setCurrentUser(u){ u?localStorage.setItem('mango_current_user',JSON.stringify(u)):localStorage.removeItem('mango_current_user'); }
+
+        function showToast(msg,type='success'){
+            const c=document.getElementById('toast-container');
+            const t=document.createElement('div');
+            const bg=type==='error'?'bg-red-600':(type==='warning'?'bg-amber-500':'bg-green-600');
+            t.className=`toast-item ${bg} text-white px-5 py-3 rounded-xl shadow-lg font-medium text-sm flex items-center gap-2`;
+            t.innerHTML=`<span>${type==='error'?'❌':(type==='warning'?'⚠️':'✅')}</span> ${msg}`;
+            c.appendChild(t);
+            setTimeout(()=>{if(t.parentNode)t.remove();},3200);
+        }
+
+        function navigateTo(hash){ window.location.hash=hash; }
+        function getCurrentRoute(){ const h=window.location.hash||'#/'; return h.split('?')[0].replace(/\/$/,'')==='#'?'#/':h.split('?')[0].replace(/\/$/,''); }
+        function showPage(id){ document.querySelectorAll('.page-section').forEach(s=>s.classList.remove('active')); const p=document.getElementById('page-'+id); if(p){p.classList.add('active');window.scrollTo({top:0,behavior:'smooth'});} if(id==='home'&&window.featuredSwiper)setTimeout(()=>window.featuredSwiper.update(),200); if(id==='all-books')refreshAllBooks(); }
+
+        function handleRoute(){
+            const route=getCurrentRoute(), user=getCurrentUser();
+            document.querySelectorAll('.nav-link').forEach(l=>{ l.classList.remove('border-mango-500','text-mango-600'); l.classList.add('border-transparent','text-gray-700'); });
+            if(route==='#/'){ showPage('home'); const l=document.querySelector('.nav-link[href="#/"]'); if(l)l.classList.add('border-mango-500','text-mango-600'); }
+            else if(route==='#/all-books'){ showPage('all-books'); const l=document.querySelector('.nav-link[href="#/all-books"]'); if(l)l.classList.add('border-mango-500','text-mango-600'); }
+            else if(route.startsWith('#/book/')){ const id=parseInt(route.split('#/book/')[1]); if(!user){showToast('Please log in.','warning');navigateTo('#/login');return;} showPage('book-details');renderBookDetailsPage(id); }
+            else if(route==='#/login'){ if(user)navigateTo('#/'); else showPage('login'); }
+            else if(route==='#/register'){ if(user)navigateTo('#/'); else showPage('register'); }
+            else if(route==='#/profile'){ if(!user){showToast('Please log in.','warning');navigateTo('#/login');return;} showPage('profile');renderProfilePage(); const l=document.querySelector('.nav-link[href="#/profile"]'); if(l)l.classList.add('border-mango-500','text-mango-600'); }
+            else if(route==='#/update-profile'){ if(!user){showToast('Please log in.','warning');navigateTo('#/login');return;} showPage('update-profile');populateUpdateForm(); }
+            else { showPage('home'); navigateTo('#/'); }
+            renderNavAuth(); document.getElementById('mobile-nav-dropdown').classList.add('hidden');
+        }
+
+        function renderNavAuth(){
+            const auth=document.getElementById('nav-auth-area'), user=getCurrentUser();
+            if(user){
+                auth.innerHTML=`<span class="hidden sm:inline text-sm font-semibold text-mango-700 bg-mango-50 px-3 py-1.5 rounded-full">👋 ${escapeHTML(user.name)}</span><button id="logout-btn" class="btn btn-sm btn-outline border-red-300 text-red-600 hover:bg-red-50 rounded-full">Logout</button>`;
+                document.getElementById('logout-btn').addEventListener('click',()=>{setCurrentUser(null);showToast('Logged out.','success');renderNavAuth();navigateTo('#/');});
+                document.getElementById('nav-profile-link').style.display=''; document.getElementById('mobile-nav-profile').style.display='';
+            }else{
+                auth.innerHTML=`<a href="#/login" class="btn btn-sm bg-mango-600 hover:bg-mango-700 text-white border-none rounded-full px-5">Login</a>`;
+                document.getElementById('nav-profile-link').style.display='none'; document.getElementById('mobile-nav-profile').style.display='none';
+            }
+        }
+        function escapeHTML(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+        document.getElementById('mobile-menu-btn').addEventListener('click',()=>document.getElementById('mobile-nav-dropdown').classList.toggle('hidden'));
+        document.querySelectorAll('.mobile-nav-link').forEach(l=>l.addEventListener('click',()=>document.getElementById('mobile-nav-dropdown').classList.add('hidden')));
+
+        function renderFeaturedBooks(){
+            const books=getBooks().slice(0,4);
+            document.getElementById('featured-books-container').innerHTML=books.map(b=>{
+                const isNew=b.id>8, isPopular=b.available_quantity<=4;
+                return `<div class="swiper-slide p-2"><div class="book-card flex flex-col h-full relative">${isNew?'<span class="badge-new">NEW</span>':''}${isPopular?'<span class="badge-popular">POPULAR</span>':''}<div class="h-56 sm:h-64 overflow-hidden"><img src="${b.image_url}" class="w-full h-full object-cover"></div><div class="p-5 flex flex-col flex-grow"><span class="text-xs font-semibold text-mango-600 uppercase">${escapeHTML(b.category)}</span><h3 class="font-bold text-lg text-mango-700">${escapeHTML(b.title)}</h3><p class="text-sm text-gray-500">by ${escapeHTML(b.author)}</p><button class="btn btn-sm bg-mango-600 text-white rounded-full w-full mt-auto view-details-btn" data-id="${b.id}">View Details</button></div></div></div>`;
+            }).join('');
+            document.querySelectorAll('.view-details-btn').forEach(btn=>btn.addEventListener('click',()=>navigateTo(`#/book/${btn.dataset.id}`)));
+            if(window.featuredSwiper)window.featuredSwiper.destroy(true,true);
+            window.featuredSwiper=new Swiper('.featured-swiper',{slidesPerView:1,spaceBetween:20,loop:true,autoplay:{delay:4000},pagination:{el:'.swiper-pagination',clickable:true},navigation:{nextEl:'.swiper-button-next',prevEl:'.swiper-button-prev'},breakpoints:{640:{slidesPerView:2},1024:{slidesPerView:3},1280:{slidesPerView:4}}});
+        }
+
+        function getSortedBooks(books,sort){ const c=[...books]; if(sort==='newest')return c.sort((a,b)=>b.id-a.id); if(sort==='popular')return c.sort((a,b)=>a.available_quantity-b.available_quantity); return c; }
+        function refreshAllBooks(){
+            const cat=document.querySelector('.cat-filter-btn.active-filter')?.dataset.cat||'all';
+            const query=document.getElementById('search-books-input')?.value||'';
+            const sort=document.getElementById('sort-books-select')?.value||'default';
+            renderAllBooksPage(cat,query,sort);
+        }
+        function renderAllBooksPage(cat='all',query='',sort='default'){
+            const books=getBooks(); let filtered=cat==='all'?books:books.filter(b=>b.category.toLowerCase()===cat.toLowerCase());
+            if(query.trim())filtered=filtered.filter(b=>b.title.toLowerCase().includes(query.toLowerCase()));
+            filtered=getSortedBooks(filtered,sort);
+            const grid=document.getElementById('all-books-grid'),no=document.getElementById('no-books-found');
+            if(filtered.length===0){grid.innerHTML='';no.classList.remove('hidden');}
+            else{ no.classList.add('hidden'); grid.innerHTML=filtered.map(b=>{ const isNew=b.id>8,isPopular=b.available_quantity<=4; return `<div class="book-card flex flex-col relative">${isNew?'<span class="badge-new">NEW</span>':''}${isPopular?'<span class="badge-popular">POPULAR</span>':''}<div class="h-48 sm:h-56 overflow-hidden"><img src="${b.image_url}" class="w-full h-full object-cover"></div><div class="p-5 flex flex-col flex-grow"><span class="text-xs font-semibold text-mango-600 uppercase">${escapeHTML(b.category)}</span><h3 class="font-bold text-lg text-mango-700">${escapeHTML(b.title)}</h3><p class="text-sm text-gray-500">by ${escapeHTML(b.author)}</p><span class="text-xs text-gray-400 mt-1">📦 ${b.available_quantity} copies</span><button class="btn btn-sm bg-mango-600 text-white rounded-full w-full mt-2 detail-btn" data-id="${b.id}">Details</button></div></div>`; }).join(''); grid.querySelectorAll('.detail-btn').forEach(btn=>btn.addEventListener('click',()=>navigateTo(`#/book/${btn.dataset.id}`))); }
+        }
+
+        document.getElementById('category-filter-buttons').addEventListener('click',e=>{ const btn=e.target.closest('.cat-filter-btn'); if(!btn)return; document.querySelectorAll('.cat-filter-btn').forEach(b=>b.classList.remove('active-filter')); btn.classList.add('active-filter'); refreshAllBooks(); });
+        document.getElementById('search-books-input').addEventListener('input',refreshAllBooks);
+        document.getElementById('sort-books-select').addEventListener('change',refreshAllBooks);
+
+        function renderBookDetailsPage(id){
+            const b=getBooks().find(x=>x.id===id), cont=document.getElementById('book-details-content');
+            if(!b){cont.innerHTML='<div class="text-center py-20">Book not found.</div>';return;}
+            const avail=b.available_quantity>0;
+            cont.innerHTML=`<div class="bg-white rounded-3xl shadow-xl overflow-hidden"><div class="flex flex-col lg:flex-row"><div class="lg:w-2/5 bg-gray-100 flex items-center justify-center p-8"><img src="${b.image_url}" class="max-h-96 rounded-xl shadow-lg"></div><div class="lg:w-3/5 p-8 lg:p-10"><span class="text-sm font-semibold text-mango-600 uppercase">${escapeHTML(b.category)}</span><h1 class="font-display text-3xl font-bold text-mango-700 mt-2">${escapeHTML(b.title)}</h1><p class="text-lg text-gray-500 mt-2">by <strong>${escapeHTML(b.author)}</strong></p><p class="text-gray-600 mt-4">${escapeHTML(b.description)}</p><div class="bg-warm-50 rounded-2xl p-4 mt-6 inline-flex items-center gap-3"><span>📦</span><span class="font-bold text-lg ${avail?'text-green-700':'text-red-600'}">${avail?b.available_quantity+' copies left':'Out of stock'}</span></div><button id="borrow-btn" class="btn btn-lg rounded-full font-bold mt-6 ${avail?'bg-mango-600 text-white':'btn-disabled'}" ${!avail?'disabled':''}>${avail?'📖 Borrow This Book':'Unavailable'}</button><a href="#/all-books" class="btn btn-ghost mt-4 rounded-full">← Back to All Books</a></div></div></div>`;
+            if(avail)document.getElementById('borrow-btn').addEventListener('click',()=>{ if(!getCurrentUser()){showToast('Please log in.','warning');navigateTo('#/login');return;} const books=getBooks(); const t=books.find(x=>x.id===id); if(t&&t.available_quantity>0){t.available_quantity--;saveBooks(books);showToast(`Borrowed "${t.title}"!`,'success');renderBookDetailsPage(id);} else showToast('No longer available.','error'); });
+        }
+
+        document.getElementById('login-form').addEventListener('submit',e=>{ e.preventDefault(); const email=document.getElementById('login-email').value.trim(),pw=document.getElementById('login-password').value; const err=document.getElementById('login-error');err.classList.add('hidden'); const user=getUsers().find(u=>u.email===email&&u.password===pw&&u.provider==='email'); if(user){const{password:_,...clean}=user;setCurrentUser(clean);showToast('Login successful!','success');renderNavAuth();navigateTo('#/');} else{err.textContent='Invalid email or password.';err.classList.remove('hidden');showToast('Login failed.','error');} });
+        document.getElementById('google-login-btn').addEventListener('click',()=>googleAuth());
+        document.getElementById('register-form').addEventListener('submit',e=>{ e.preventDefault(); const name=document.getElementById('register-name').value.trim(),email=document.getElementById('register-email').value.trim(),photo=document.getElementById('register-photo').value.trim(),pw=document.getElementById('register-password').value; const err=document.getElementById('register-error');err.classList.add('hidden'); if(getUsers().find(u=>u.email===email)){err.textContent='Email exists.';err.classList.remove('hidden');showToast('Registration failed.','error');return;} const newUser={id:Date.now(),name,email,photo_url:photo||'https://picsum.photos/seed/default-user/200/200',password:pw,provider:'email'}; const users=getUsers();users.push(newUser);saveUsers(users);showToast('Registered! Please log in.','success');navigateTo('#/login'); });
+        document.getElementById('google-register-btn').addEventListener('click',()=>googleAuth());
+        function googleAuth(){ const mock={id:Date.now(),name:'Google User',email:'g'+Date.now()+'@gmail.com',photo_url:'https://picsum.photos/seed/google-user/200/200',provider:'google'}; const users=getUsers(); if(!users.find(u=>u.email===mock.email))users.push({...mock,password:'oauth'});saveUsers(users); const{password:_,...clean}=mock;setCurrentUser(clean);showToast('Google login successful!','success');renderNavAuth();navigateTo('#/'); }
+
+        function renderProfilePage(){ const user=getCurrentUser(); if(!user)return; document.getElementById('profile-content').innerHTML=`<div class="bg-white rounded-3xl shadow-xl p-8 lg:p-10"><div class="flex flex-col sm:flex-row items-center gap-6 mb-8"><div class="w-28 h-28 rounded-full overflow-hidden profile-avatar"><img src="${user.photo_url||'https://picsum.photos/seed/default-user/200/200'}"></div><div class="text-center sm:text-left"><h1 class="font-display text-3xl font-bold text-mango-700">${escapeHTML(user.name)}</h1><p class="text-gray-500">${escapeHTML(user.email)}</p><span class="text-xs bg-mango-100 text-mango-700 px-3 py-1 rounded-full">${user.provider==='google'?'🔗 Google':'📧 Email'}</span></div></div><div class="bg-warm-50 rounded-2xl p-6 mb-6"><h3 class="font-semibold text-lg text-mango-700 mb-3">Account Details</h3><div class="grid grid-cols-2 gap-3 text-sm"><div>ID:</div><div>${user.id}</div><div>Provider:</div><div>${user.provider}</div><div>Name:</div><div>${escapeHTML(user.name)}</div><div>Email:</div><div>${escapeHTML(user.email)}</div></div></div><a href="#/update-profile" class="btn btn-lg bg-mango-600 text-white rounded-full px-8">✏️ Update Information</a></div>`; }
+        function populateUpdateForm(){ const u=getCurrentUser(); if(u){document.getElementById('update-photo').value=u.photo_url||'';document.getElementById('update-name').value=u.name||'';} }
+        document.getElementById('update-profile-form').addEventListener('submit',e=>{ e.preventDefault(); const u=getCurrentUser(); if(!u)return; u.name=document.getElementById('update-name').value.trim()||u.name; u.photo_url=document.getElementById('update-photo').value.trim()||u.photo_url; setCurrentUser(u); const users=getUsers(); const idx=users.findIndex(x=>x.id===u.id); if(idx!==-1){users[idx].name=u.name;users[idx].photo_url=u.photo_url;saveUsers(users);} showToast('Profile updated!','success');renderNavAuth();navigateTo('#/profile'); });
+
+        function init(){ renderFeaturedBooks(); renderNavAuth(); handleRoute(); }
+        window.addEventListener('hashchange',handleRoute);
+        document.addEventListener('DOMContentLoaded',init);
+        document.getElementById('nav-logo').addEventListener('click',e=>{e.preventDefault();navigateTo('#/');});
+        console.log('🥭 Mango ready.');
+    </script>
+</body>
+</html>

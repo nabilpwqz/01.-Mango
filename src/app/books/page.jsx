@@ -1,5 +1,0 @@
-import BooksView from "@/components/BooksView";
-
-export default function BooksPage() {
-  return <BooksView />;
-}
